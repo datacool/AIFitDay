@@ -1,0 +1,39 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9" />
+      <stop offset="1" stop-color="#0369A1" />
+    </linearGradient>
+    <linearGradient id="card" x1="140" y1="120" x2="1060" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.24" />
+      <stop offset="1" stop-color="white" stop-opacity="0.10" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect x="140" y="120" width="920" height="390" rx="28" fill="url(#card)" />
+  <rect x="170" y="150" width="360" height="36" rx="18" fill="white" fill-opacity="0.20" />
+
+  <text x="170" y="278" fill="white" font-size="74" font-family="Arial, sans-serif" font-weight="700">
+    AIFitDay
+  </text>
+  <text x="170" y="338" fill="white" fill-opacity="0.92" font-size="34" font-family="Arial, sans-serif" font-weight="600">
+    AIFitDay, AI Planning with Weather
+  </text>
+  <text x="170" y="400" fill="white" fill-opacity="0.92" font-size="30" font-family="Arial, sans-serif" font-weight="500">
+    Real-time weather + AI for smarter scheduling
+  </text>
+  <text x="170" y="448" fill="white" fill-opacity="0.86" font-size="24" font-family="Arial, sans-serif">
+    Manage your daily routine smartly using AI
+  </text>
+
+  <rect x="866" y="155" width="152" height="112" rx="24" fill="white" fill-opacity="0.92" />
+  <text x="942" y="227" text-anchor="middle" fill="#0EA5E9" font-size="56" font-family="Arial, sans-serif" font-weight="800">
+    AI
+  </text>
+
+  <rect x="868" y="320" width="146" height="112" rx="18" fill="white" fill-opacity="0.18" />
+  <rect x="892" y="346" width="98" height="10" rx="5" fill="white" fill-opacity="0.88" />
+  <rect x="892" y="370" width="82" height="10" rx="5" fill="white" fill-opacity="0.80" />
+  <rect x="892" y="394" width="64" height="10" rx="5" fill="white" fill-opacity="0.72" />
+</svg>
