@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+
 import "./globals.css";
+
+const gaMeasurementId = "G-8QRJ4TW4BL";
+
+/** Google AdSense 게시자 ID (adsbygoogle.js client 파라미터) */
+const adsenseClientId = "ca-pub-5499985827015012";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,8 +19,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://ai-fit-day.vercel.app"
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://aifitday.app"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "AIFitDay",
     template: "%s | AIFitDay",
@@ -30,7 +40,7 @@ export const metadata: Metadata = {
     "스마트 플래너",
   ],
   alternates: {
-    canonical: "/",
+    canonical: "/about",
   },
   openGraph: {
     title: "AIFitDay | 에이핏데이",
@@ -39,22 +49,14 @@ export const metadata: Metadata = {
     siteName: "AIFitDay",
     locale: "ko_KR",
     type: "website",
-    url: "/",
-    images: [
-      {
-        url: "/og-image.svg",
-        width: 1200,
-        height: 630,
-        alt: "AIFitDay 대표 썸네일",
-      },
-    ],
+    url: "/about",
+    // PNG는 app/opengraph-image.tsx가 생성(카카오 등 SVG og:image 미지원 대응)
   },
   twitter: {
     card: "summary_large_image",
     title: "AIFitDay | 에이핏데이",
     description:
       "실시간 날씨 정보와 AI를 활용하여 스마트하게 나의 일정을 관리해주는 서비스",
-    images: ["/og-image.svg"],
   },
   robots: {
     index: true,
@@ -67,11 +69,35 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return (
     <html lang="ko">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {isProduction ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaMeasurementId}');
+              `}
+            </Script>
+            <Script
+              id="google-adsense"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+              strategy="afterInteractive"
+              crossOrigin="anonymous"
+            />
+          </>
+        ) : null}
         {children}
       </body>
     </html>

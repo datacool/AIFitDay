@@ -128,3 +128,18 @@
 - [ ] Production / Preview 등 **적용 환경**에 들어갔는지
 - [ ] 변경 후 **재배포** 했는지
 - [ ] Network에서 `/api/weather` 응답 코드·바디로 서버 오류인지 구분했는지
+
+---
+
+## Windows 로컬 dev: Internal Server Error / 청크 500
+
+터미널에 다음과 비슷한 로그가 나오면 **Webpack dev + Windows 파일 잠금(AV/동기화)** 조합일 수 있습니다.
+
+`UNKNOWN: unknown error, open '...\.next\dev\server\vendor-chunks\next.js'` (errno **-4094**)
+
+### 조치
+
+1. **`npm run dev`** 는 이 프로젝트에서 **기본(Turbopack)** 으로 실행됩니다. (Webpack은 `npm run dev:webpack`)
+2. dev 서버 종료 후 **`.next` 삭제** → `npm run dev` 또는 `npm run dev:clean`
+3. 그래도 동일하면 **Windows Defender**에서 프로젝트 폴더(또는 최소 `.next`) **제외**, **OneDrive 동기화** 대상에서 제외 검토
+4. 예전 탭은 닫고 **강력 새로고침**(캐시 비움)

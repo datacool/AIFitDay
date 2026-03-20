@@ -337,6 +337,14 @@ const Home = () => {
     : Cloud
 
   useEffect(() => {
+    if (!supabase) {
+      setAuthError(
+        "Supabase 연결 정보가 없습니다. .env.local의 NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY를 확인한 뒤 서버를 재시작해 주세요.",
+      )
+      setIsAuthChecking(false)
+      return
+    }
+
     const syncAuthUser = async () => {
       const {
         data: { session },
@@ -367,7 +375,7 @@ const Home = () => {
       setCurrentUser(user)
 
       if (event === "SIGNED_OUT") {
-        router.replace("/login")
+        router.replace("/about")
         setIsAuthChecking(false)
       }
 
@@ -376,7 +384,9 @@ const Home = () => {
       }
     })
 
-    return () => authListener.subscription.unsubscribe()
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [router, supabase])
 
   useEffect(() => {
@@ -474,7 +484,7 @@ const Home = () => {
 
   /** 현재 사용자 기준으로 할일 목록을 조회한다. */
   const fetchTodos = useCallback(async (options?: TodoQueryOptions) => {
-    if (!currentUser) return
+    if (!currentUser || !supabase) return
 
     setIsTodosLoading(true)
     setTodoError("")
@@ -803,6 +813,11 @@ const Home = () => {
       return
     }
 
+    if (!supabase) {
+      setTodoError("Supabase 설정을 확인해 주세요.")
+      return
+    }
+
     setIsTodoSubmitting(true)
     setTodoError("")
 
@@ -854,7 +869,7 @@ const Home = () => {
 
   /** 할일 완료 상태를 토글한다. */
   const handleToggleComplete = async (todoId: string, completed: boolean) => {
-    if (!currentUser) return
+    if (!currentUser || !supabase) return
 
     setTodoError("")
     const { error } = await supabase
@@ -877,7 +892,7 @@ const Home = () => {
     todo: TodoItem,
     nextStatus: TodoStatusOption
   ) => {
-    if (!currentUser) return
+    if (!currentUser || !supabase) return
 
     const now = new Date()
     const nextHourIso = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
@@ -927,7 +942,7 @@ const Home = () => {
 
   /** 할일 항목을 목록에서 삭제한다. */
   const handleDeleteTodo = async (todoId: string) => {
-    if (!currentUser) return
+    if (!currentUser || !supabase) return
 
     setTodoError("")
     const { error } = await supabase
@@ -1035,6 +1050,12 @@ const Home = () => {
     setIsSigningOut(true)
 
     try {
+      if (!supabase) {
+        setCurrentUser(null)
+        window.location.assign("/about")
+        return
+      }
+
       const signOutPromise = supabase.auth.signOut({ scope: "local" })
       const timeoutPromise = new Promise<{ error: null; timeout: true }>((resolve) =>
         setTimeout(() => resolve({ error: null, timeout: true }), 2500)
@@ -1047,7 +1068,7 @@ const Home = () => {
       }
 
       setCurrentUser(null)
-      window.location.assign("/login")
+      window.location.assign("/about")
     } catch {
       setAuthError("로그아웃 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.")
     } finally {

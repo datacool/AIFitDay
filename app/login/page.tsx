@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { PasswordField } from "@/components/password-field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
@@ -30,13 +31,21 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
+    if (!supabase) {
+      setIsCheckingAuth(false)
+      setErrorMessage(
+        "Supabase 연결 정보가 없습니다. 프로젝트 루트의 .env.local에 NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY를 설정한 뒤 개발 서버를 다시 실행해 주세요.",
+      )
+      return
+    }
+
     const syncAuthState = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
       if (session?.user) {
-        router.replace("/")
+        router.replace("/dashboard")
         return
       }
 
@@ -47,7 +56,7 @@ const LoginPage = () => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        router.replace("/")
+        router.replace("/dashboard")
         return
       }
 
@@ -56,7 +65,9 @@ const LoginPage = () => {
       }
     })
 
-    return () => authListener.subscription.unsubscribe()
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [router, supabase])
 
   /** 로그인 폼을 검증한다. */
@@ -77,6 +88,13 @@ const LoginPage = () => {
     event.preventDefault()
     setErrorMessage("")
 
+    if (!supabase) {
+      setErrorMessage(
+        "Supabase 설정이 필요합니다. .env.local을 확인한 뒤 dev 서버를 재시작해 주세요.",
+      )
+      return
+    }
+
     const validationMessage = validateForm()
     if (validationMessage) {
       setErrorMessage(validationMessage)
@@ -96,7 +114,7 @@ const LoginPage = () => {
         return
       }
 
-      window.location.assign("/")
+      window.location.assign("/dashboard")
     } catch {
       setErrorMessage("로그인 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.")
     } finally {
@@ -106,31 +124,34 @@ const LoginPage = () => {
 
   if (isCheckingAuth) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" />
-          인증 상태를 확인하는 중입니다...
+      <main className="flex min-h-[100dvh] w-full flex-col bg-background">
+        <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-12">
+          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            인증 상태를 확인하는 중입니다...
+          </div>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-lg space-y-5">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+    <main className="flex min-h-[100dvh] w-full flex-col bg-background">
+      <div className="flex w-full flex-1 flex-col justify-center px-4 py-12">
+        <div className="mx-auto w-full max-w-lg space-y-5">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Sparkles className="size-5" />
+            </div>
+            <p className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              AIFitDay
+            </p>
+            <p className="text-sm text-muted-foreground">
+              AI를 이용해서 여러분의 데일리 루틴을 스마트하게 관리하세요
+            </p>
           </div>
-          <p className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            AIFitDay
-          </p>
-          <p className="text-sm text-muted-foreground">
-            AI를 이용해서 여러분의 데일리 루틴을 스마트하게 관리하세요
-          </p>
-        </div>
 
-        <Card className="w-full">
+          <Card className="w-full">
           <CardHeader className="space-y-2 px-5 pt-7 text-center md:px-8 md:pt-8">
             <CardTitle className="text-2xl">계정에 로그인</CardTitle>
             <CardDescription>
@@ -156,21 +177,16 @@ const LoginPage = () => {
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">비밀번호</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  className="h-10 px-3"
-                  placeholder="비밀번호를 입력하세요"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
+              <PasswordField
+                id="password"
+                name="password"
+                label="비밀번호"
+                value={password}
+                onValueChange={setPassword}
+                disabled={isSubmitting}
+                autoComplete="current-password"
+                placeholder="비밀번호를 입력하세요"
+              />
               <Button
                 type="submit"
                 className="mt-2 h-10 w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
@@ -198,8 +214,29 @@ const LoginPage = () => {
               </Button>
             </p>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
+
+      <footer
+        className="mt-auto w-full shrink-0 border-t border-border/50 py-6 text-center"
+        aria-label="바닥글 링크"
+      >
+        <nav className="flex w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+          <Link href="/about" className="hover:text-foreground">
+            서비스 소개
+          </Link>
+          <Link href="/faq" className="hover:text-foreground">
+            FAQ
+          </Link>
+          <Link href="/privacy" className="hover:text-foreground">
+            개인정보처리방침
+          </Link>
+          <Link href="/contact" className="hover:text-foreground">
+            문의
+          </Link>
+        </nav>
+      </footer>
     </main>
   )
 }

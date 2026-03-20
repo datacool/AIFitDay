@@ -150,3 +150,56 @@ create policy "todos_delete_own"
 on public.todos
 for delete
 using (auth.uid() = user_id);
+
+-- 비로그인 문의 접수 (API에서 Service Role로만 insert; 일반 클라이언트는 접근 불가)
+create table if not exists public.contact_submissions (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  category text not null
+    check (category in (
+      'general',
+      'bug',
+      'account',
+      'partnership',
+      'privacy',
+      'other'
+    )),
+  message text not null,
+  attachment_paths text[] not null default '{}',
+  status text not null default 'received'
+    check (status in ('received', 'in_progress', 'resolved')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_contact_submissions_created_at
+  on public.contact_submissions (created_at desc);
+
+create index if not exists idx_contact_submissions_status
+  on public.contact_submissions (status);
+
+drop trigger if exists contact_submissions_set_updated_at on public.contact_submissions;
+create trigger contact_submissions_set_updated_at
+before update on public.contact_submissions
+for each row
+execute function public.set_updated_at();
+
+alter table public.contact_submissions enable row level security;
+
+-- anon·authenticated 모두 행을 읽거나 쓸 수 없음 (Service Role만 우회)
+drop policy if exists "contact_submissions_no_public" on public.contact_submissions;
+create policy "contact_submissions_no_public"
+on public.contact_submissions
+for all
+using (false)
+with check (false);
+
+-- 이미 contact_submissions가 있는 DB에 첨부 컬럼만 추가할 때
+alter table public.contact_submissions
+  add column if not exists attachment_paths text[] not null default '{}';
+
+-- 문의 첨부 이미지(비공개, API에서 Service Role로만 업로드)
+insert into storage.buckets (id, name, public)
+values ('contact-attachments', 'contact-attachments', false)
+on conflict (id) do nothing;
