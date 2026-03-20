@@ -1,6 +1,9 @@
-![1773763692826](image/troubleshooting-auth/1773763692826.png)![1773763701293](image/troubleshooting-auth/1773763701293.png)![1773763720636](image/troubleshooting-auth/1773763720636.png)![1773763750735](image/troubleshooting-auth/1773763750735.png)![1773765885729](image/troubleshooting-auth/1773765885729.png)![1773765887782](image/troubleshooting-auth/1773765887782.png)![1773765916672](image/troubleshooting-auth/1773765916672.png)![1773765917656](image/troubleshooting-auth/1773765917656.png)![1773765923123](image/troubleshooting-auth/1773765923123.png)# Auth 트러블슈팅 회고
+![1773763692826](image/troubleshooting-auth/1773763692826.png)![1773763701293](image/troubleshooting-auth/1773763701293.png)![1773763720636](image/troubleshooting-auth/1773763720636.png)![1773763750735](image/troubleshooting-auth/1773763750735.png)![1773765885729](image/troubleshooting-auth/1773765885729.png)![1773765887782](image/troubleshooting-auth/1773765887782.png)![1773765916672](image/troubleshooting-auth/1773765916672.png)![1773765917656](image/troubleshooting-auth/1773765917656.png)![1773765923123](image/troubleshooting-auth/1773765923123.png)![1773794567327](image/troubleshooting-auth/1773794567327.png)# 개발·배포 트러블슈팅 회고
 
-## 개요
+> **단일 문서:** 이 파일이 프로젝트 트러블슈팅·회고의 기준 문서입니다.  
+> 루트의 `troubleshooting-auth.md`는 여기로 연결만 합니다.
+
+## 개요 (인증 이슈)
 
 - 대상 프로젝트: AI Todo 웹 서비스
 - 이슈 요약:
@@ -80,3 +83,48 @@
 3. 로그인/로그아웃 전환 멈춤 시
    - 네트워크 탭에서 `/` ↔ `/login` 반복 요청 확인
    - 인증 가드 충돌 여부 점검
+
+---
+
+## 배포(Vercel)·환경 변수·OS 차이 (회고)
+
+### 배경
+
+- 로컬(`next dev`, `npm run start`)에서는 정상이었으나 **Vercel 배포**에서만
+  실시간 날씨(`/api/weather`) 연동이 실패하고,
+  UI에 *「실시간 날씨를 불러오지 못해 기본 데이터를 표시합니다.」* 가 표시됨.
+
+### 증상 정리
+
+- 브라우저 Network: `GET /api/weather?...` 가 **4xx/5xx** 또는 에러 바디
+- 서버 라우트는 `process.env.WEATHERAPI_KEY` 없으면 500 응답
+  (`app/api/weather/route.ts`)
+
+### 원인: 환경 변수 **이름 대소문자** — Windows vs Linux
+
+| 환경 | 동작 |
+|------|------|
+| **Windows 로컬** | Node에서 환경 변수 **키를 대소문자 구분 없이** 다루는 경우가 많음.  
+  예: `.env.local`에 `weatherAPI_KEY`만 있어도 `process.env.WEATHERAPI_KEY`로 읽히는 것처럼 보일 수 있음. |
+| **Linux (Vercel)** | 환경 변수 키가 **완전 일치**해야 함.  
+  `weatherAPI_KEY` ≠ `WEATHERAPI_KEY` → 후자는 `undefined` → 배포에서만 실패. |
+
+즉 **오타라기보다 “로컬 OS와 배포 OS의 env 규칙 차이”**로,  
+같은 `.env`를 Vercel에 Import 해도 **이름이 코드와 1글자라도 다르면** 운영에서만 터질 수 있다.
+
+### 수행한 조치
+
+1. Vercel `Environment Variables` 이름을 코드와 동일하게 **`WEATHERAPI_KEY`** 로 통일
+2. (권장) 로컬 `.env.local`도 동일 스펠링으로 맞춰 **Windows·Linux 모두 동일 동작** 보장
+3. 변수 추가/이름 변경 후 **재배포(Redeploy)**
+
+### 보안 메모
+
+- API 키가 스크린샷/채팅 등에 노출되었다면 **재발급·이전 키 폐기** 검토
+
+### 재발 방지 체크리스트 (배포)
+
+- [ ] Vercel 변수명이 코드의 `process.env.***` 와 **대소문자까지 동일**한지
+- [ ] Production / Preview 등 **적용 환경**에 들어갔는지
+- [ ] 변경 후 **재배포** 했는지
+- [ ] Network에서 `/api/weather` 응답 코드·바디로 서버 오류인지 구분했는지

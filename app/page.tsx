@@ -1077,7 +1077,7 @@ const Home = () => {
             <div>
               <p className="text-lg font-bold">AIFitDay</p>
               <p className="text-xs text-muted-foreground">
-                Manage your daily routine smartly using AI.
+                AI를 이용해서 여러분의 데일리 루틴을 스마트하게 관리하세요
               </p>
             </div>
           </div>
