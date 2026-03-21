@@ -1,0 +1,46 @@
+# 검색엔진 등록 (Google · 네이버)
+
+배포 URL은 Vercel 환경 변수 `NEXT_PUBLIC_SITE_URL` 과 일치해야 합니다  
+(예: `https://ai-fit-day.vercel.app`, 끝에 `/` 없이).
+
+## 1. Google Search Console
+
+1. [Search Console](https://search.google.com/search-console) → **속성 추가** → **URL 접두어** 에 사이트 루트 URL 입력.
+2. **소유권 확인**
+   - **HTML 태그**: 제공된 `content` 값만 복사해 Vercel(등)에  
+     `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` 환경 변수로 넣고 재배포합니다.  
+     루트 레이아웃의 `metadata.verification.google` 에 반영됩니다.
+   - 또는 **DNS TXT** / HTML 파일 방식을 사용해도 됩니다.
+3. **색인** → **Sitemaps** 에 다음을 제출합니다.  
+   `{SITE_URL}/sitemap.xml`  
+   예: `https://ai-fit-day.vercel.app/sitemap.xml`
+4. **URL 검사**로 `/about`, `/faq` 등 공개 페이지에 대해 색인 생성을 요청합니다(가능한 경우).
+
+## 2. 네이버 서치어드바이저
+
+1. [서치어드바이저](https://searchadvisor.naver.com/) → 사이트 추가 → 동일한 루트 URL.
+2. **소유 확인** 메타 태그의 `content` 값을  
+   `NEXT_PUBLIC_NAVER_SITE_VERIFICATION` 에 넣고 재배포합니다.  
+   `<meta name="naver-site-verification" ... />` 는 `metadata.other` 로 출력됩니다.
+3. **사이트맵 제출**에 동일하게 `.../sitemap.xml` 을 등록합니다.
+4. UI 안내에 따라 **수집 요청** 등을 진행합니다.
+
+## 3. 환경 변수 요약
+
+| 변수 | 용도 |
+|------|------|
+| `NEXT_PUBLIC_SITE_URL` | 사이트 절대 URL (sitemap·robots·metadataBase) |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console HTML 태그의 verification 값 |
+| `NEXT_PUBLIC_NAVER_SITE_VERIFICATION` | 네이버 소유확인 meta content 값 |
+
+로컬 `.env.local` 예시는 버전 관리에 넣지 마세요.
+
+## 4. 구현 참고
+
+- `app/sitemap.ts` — 공개 경로만 `/sitemap.xml` 으로 노출.
+- `app/robots.ts` — `Allow: /`, `Disallow: /dashboard`, `Sitemap` URL 포함.
+- `app/dashboard/layout.tsx` — `robots: noindex` 로 대시보드 색인 완화.
+
+## 5. (선택) Bing
+
+[Bing Webmaster Tools](https://www.bing.com/webmasters) 에서 동일하게 소유 확인 및 사이트맵 제출.

@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "문의",
   description:
     "AIFitDay 고객 문의 — FAQ를 확인한 뒤 온사이트 양식으로 남겨 주세요.",
+  alternates: { canonical: "/contact" },
 }
 
 const googleFormUrl = process.env.NEXT_PUBLIC_CONTACT_FORM_URL?.trim()

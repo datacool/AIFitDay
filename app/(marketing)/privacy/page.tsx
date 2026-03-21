@@ -4,6 +4,7 @@ import Link from "next/link"
 export const metadata: Metadata = {
   title: "개인정보처리방침",
   description: "AIFitDay 서비스의 개인정보 수집·이용 및 보관에 관한 안내입니다.",
+  alternates: { canonical: "/privacy" },
 }
 
 const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim()

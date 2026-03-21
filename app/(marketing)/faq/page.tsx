@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "자주 묻는 질문",
   description:
     "AIFitDay 서비스 FAQ — 계정, 데이터, 오류 제보 등 자주 묻는 질문과 답변입니다.",
+  alternates: { canonical: "/faq" },
 }
 
 export default function FaqPage() {

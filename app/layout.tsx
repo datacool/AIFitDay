@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
+import { getSiteUrl } from "@/lib/site";
+
 import "./globals.css";
 
 const gaMeasurementId = "G-8QRJ4TW4BL";
@@ -19,8 +21,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://ai-fit-day.vercel.app"
+const siteUrl = getSiteUrl();
+
+const googleSiteVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+const naverSiteVerification =
+  process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION?.trim();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -39,9 +45,6 @@ export const metadata: Metadata = {
     "Todo",
     "스마트 플래너",
   ],
-  alternates: {
-    canonical: "/about",
-  },
   openGraph: {
     title: "AIFitDay | 에이핏데이",
     description:
@@ -49,7 +52,7 @@ export const metadata: Metadata = {
     siteName: "AIFitDay",
     locale: "ko_KR",
     type: "website",
-    url: "/about",
+    url: "/",
     // PNG는 app/opengraph-image.tsx가 생성(카카오 등 SVG og:image 미지원 대응)
   },
   twitter: {
@@ -62,6 +65,16 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  ...(googleSiteVerification
+    ? { verification: { google: googleSiteVerification } }
+    : {}),
+  ...(naverSiteVerification
+    ? {
+        other: {
+          "naver-site-verification": naverSiteVerification,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({
