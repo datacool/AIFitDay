@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 
@@ -229,12 +231,36 @@ const getTempBand = (temp: number): TempBand => {
   return "cold"
 }
 
-const outfitGuides: Record<TempBand, { tags: string[]; message: string }> = {
-  hot: { tags: ["반팔티", "반바지", "시원해"], message: "통풍 좋은 옷차림을 추천해요" },
-  warm: { tags: ["반팔티", "면바지", "쾌적해"], message: "가벼운 외출하기 좋은 날씨예요" },
-  cool: { tags: ["후드티", "청바지", "적당해"], message: "얇은 겉옷 하나 챙기세요" },
-  chilly: { tags: ["가디건", "긴바지", "선선해"], message: "보온되는 상의를 추천해요" },
-  cold: { tags: ["패딩", "기모바지", "추워요"], message: "두꺼운 아우터로 체온을 지켜주세요" },
+/** items: 의류·소품 칩만. mood: 체감 문구(칩으로 넣지 않음). */
+const outfitGuides: Record<
+  TempBand,
+  { items: string[]; message: string; mood: string }
+> = {
+  hot: {
+    items: ["반팔티", "반바지", "통풍 좋은 신발"],
+    message: "통풍 좋은 옷차림을 추천해요",
+    mood: "시원한 날씨예요",
+  },
+  warm: {
+    items: ["반팔티", "면바지", "가벼운 겉옷"],
+    message: "가벼운 외출하기 좋은 날씨예요",
+    mood: "쾌적해요",
+  },
+  cool: {
+    items: ["후드티", "청바지", "얇은 자켓"],
+    message: "얇은 겉옷 하나 챙기세요",
+    mood: "적당한 기온이에요",
+  },
+  chilly: {
+    items: ["가디건", "긴바지", "얇은 겉옷"],
+    message: "보온되는 상의를 추천해요",
+    mood: "선선한 날씨예요",
+  },
+  cold: {
+    items: ["패딩", "기모바지", "목도리"],
+    message: "두꺼운 아우터로 체온을 지켜주세요",
+    mood: "추운 날씨예요",
+  },
 }
 
 /** 상태와 우선순위 기준에 따라 할일 목록을 정렬한다. */
@@ -310,6 +336,7 @@ const Home = () => {
   const [isTodoSubmitting, setIsTodoSubmitting] = useState(false)
   const [totalTodoCount, setTotalTodoCount] = useState(0)
   const [todoFormVersion, setTodoFormVersion] = useState(0)
+  const [isTodoAiMode, setIsTodoAiMode] = useState(false)
   const [activeSummaryPeriod, setActiveSummaryPeriod] = useState<SummaryPeriod>("today")
   const [isAiSummaryLoading, setIsAiSummaryLoading] = useState(false)
   const [aiSummaryError, setAiSummaryError] = useState("")
@@ -388,6 +415,10 @@ const Home = () => {
       authListener.subscription.unsubscribe()
     }
   }, [router, supabase])
+
+  useEffect(() => {
+    setIsTodoAiMode(false)
+  }, [editingTodo?.id, todoFormVersion])
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -1458,6 +1489,7 @@ const Home = () => {
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-4 md:min-h-[208px]">
                   <p className="text-base font-semibold">오늘의 옷차림 가이드</p>
                   <p className="mt-1 text-sm text-muted-foreground">{currentOutfit.message}</p>
+                  <p className="text-xs text-muted-foreground">{currentOutfit.mood}</p>
                   <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                     <Image
                       src={characterImagePath}
@@ -1468,16 +1500,9 @@ const Home = () => {
                     />
                     <div className="space-y-2">
                       <div className="flex flex-wrap gap-2">
-                        {currentOutfit.tags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant={
-                              tag === "적당해" || tag === "쾌적해" || tag === "시원해"
-                                ? "default"
-                                : "outline"
-                            }
-                          >
-                            {tag}
+                        {currentOutfit.items.map((item) => (
+                          <Badge key={item} variant="outline">
+                            {item}
                           </Badge>
                         ))}
                       </div>
@@ -1628,7 +1653,10 @@ const Home = () => {
                 <CloudSun className="size-4 text-secondary" />
                 오늘의 옷차림
               </CardTitle>
-              <CardDescription>{currentOutfit.message}</CardDescription>
+              <CardDescription>
+                {currentOutfit.message}{" "}
+                <span className="text-muted-foreground">· {currentOutfit.mood}</span>
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="inline-flex rounded-full bg-muted p-1">
@@ -1670,14 +1698,10 @@ const Home = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-foreground">{currentOutfit.message}</p>
               <div className="flex flex-wrap gap-2">
-                {currentOutfit.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant={tag === "적당해" || tag === "쾌적해" || tag === "시원해" ? "default" : "outline"}
-                  >
-                    {tag}
+                {currentOutfit.items.map((item) => (
+                  <Badge key={item} variant="outline">
+                    {item}
                   </Badge>
                 ))}
               </div>
@@ -1698,7 +1722,7 @@ const Home = () => {
             </div>
           ) : null}
 
-          <Card className="md:col-span-12">
+          <Card className="order-1 md:col-span-12">
             <CardContent className="grid gap-3 pt-5 md:grid-cols-12">
               <div className="relative md:col-span-5">
                 <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -1754,8 +1778,31 @@ const Home = () => {
             </CardContent>
           </Card>
 
+          <div className="order-2 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 md:col-span-12">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Sparkles className="size-4 shrink-0 text-primary" />
+              <p className="text-sm font-medium">
+                AI로 한 줄 입력
+                <span className="ml-1 hidden font-normal text-muted-foreground sm:inline">
+                  — 자연어로 할 일을 채운 뒤 저장하세요.
+                </span>
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Label htmlFor="todo-ai-quick-toggle" className="text-xs text-muted-foreground">
+                {isTodoAiMode ? "ON" : "OFF"}
+              </Label>
+              <Switch
+                id="todo-ai-quick-toggle"
+                checked={isTodoAiMode}
+                onCheckedChange={setIsTodoAiMode}
+                aria-label="AI 할 일 입력 모드"
+              />
+            </div>
+          </div>
+
           {selectedCalendarDate ? (
-            <div className="md:col-span-12">
+            <div className="order-3 md:col-span-12">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
                 <p>
                   날짜 필터 적용 중:{" "}
@@ -1771,7 +1818,7 @@ const Home = () => {
           ) : null}
 
           {hasFilteredOutItems ? (
-            <div className="md:col-span-12">
+            <div className="order-4 md:col-span-12">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300/50 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                 <p>
                   필터 때문에 일부 항목이 숨겨져 있어요. 현재{" "}
@@ -1785,7 +1832,7 @@ const Home = () => {
             </div>
           ) : null}
 
-          <Card className="md:col-span-12">
+          <Card className="order-7 md:order-5 md:col-span-12">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -2126,10 +2173,12 @@ const Home = () => {
             </CardContent>
           </Card>
 
-          <div className="md:col-span-4">
+          <div className="order-5 md:order-6 md:col-span-4">
             <TodoForm
               key={`${editingTodo?.id ?? "create"}-${todoFormVersion}`}
               mode={editingTodo ? "edit" : "create"}
+              aiMode={isTodoAiMode}
+              onAiModeChange={setIsTodoAiMode}
               initialValues={
                 editingTodo
                   ? {
@@ -2150,7 +2199,7 @@ const Home = () => {
             />
           </div>
 
-          <div className="md:col-span-8">
+          <div className="order-6 md:order-7 md:col-span-8">
             <TodoList
               todos={filteredTodosByCalendar}
               isLoading={isTodosLoading}

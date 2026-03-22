@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
 import { getSiteUrl } from "@/lib/site";
+import { normalizeSiteVerificationToken } from "@/lib/verification-env";
 
 import "./globals.css";
 
@@ -23,10 +24,12 @@ const geistMono = Geist_Mono({
 
 const siteUrl = getSiteUrl();
 
-const googleSiteVerification =
-  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
-const naverSiteVerification =
-  process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION?.trim();
+const googleSiteVerification = normalizeSiteVerificationToken(
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+);
+const naverSiteVerification = normalizeSiteVerificationToken(
+  process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION,
+);
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

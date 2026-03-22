@@ -29,6 +29,9 @@ interface TodoFormProps {
   onSubmit: (values: TodoFormValues) => void | Promise<void>
   onCancel?: () => void
   className?: string
+  /** 부모와 동기화할 때: 검색 상단 배너 스위치 등 */
+  aiMode?: boolean
+  onAiModeChange?: (enabled: boolean) => void
 }
 
 interface AiParseResponse {
@@ -123,6 +126,8 @@ export const TodoForm = ({
   onSubmit,
   onCancel,
   className,
+  aiMode: aiModeControlled,
+  onAiModeChange,
 }: TodoFormProps) => {
   const mergedValues: TodoFormValues = {
     ...defaultValues,
@@ -144,7 +149,16 @@ export const TodoForm = ({
   const [completed, setCompleted] = useState(mergedValues.completed)
   const [errorText, setErrorText] = useState("")
   const [noticeText, setNoticeText] = useState("")
-  const [isAiMode, setIsAiMode] = useState(false)
+  const [internalAiMode, setInternalAiMode] = useState(false)
+  const isAiControlled = typeof aiModeControlled === "boolean"
+  const isAiMode = isAiControlled ? aiModeControlled : internalAiMode
+
+  const setAiMode = (next: boolean) => {
+    if (!isAiControlled) {
+      setInternalAiMode(next)
+    }
+    onAiModeChange?.(next)
+  }
   const [naturalLanguageInput, setNaturalLanguageInput] = useState("")
   const [isAiGenerating, setIsAiGenerating] = useState(false)
   const pendingDueDate = buildDateTimeFromParts(
@@ -309,7 +323,7 @@ export const TodoForm = ({
       className={cn("grid gap-4 rounded-xl border border-border/60 bg-card p-5", className)}
       onSubmit={handleSubmit}
     >
-      <div className="grid gap-2">
+      <div className="order-2 grid gap-2 md:order-1">
         <Label htmlFor="todo-title">제목</Label>
         <Input
           id="todo-title"
@@ -320,7 +334,7 @@ export const TodoForm = ({
         />
       </div>
 
-      <div className="grid gap-2">
+      <div className="order-3 grid gap-2 md:order-2">
         <Label htmlFor="todo-description">설명</Label>
         <Textarea
           id="todo-description"
@@ -331,17 +345,18 @@ export const TodoForm = ({
         />
       </div>
 
-      <div className="grid gap-2 rounded-lg border border-border/60 bg-muted/20 p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
+      <div className="order-1 grid gap-2 rounded-lg border border-border/60 bg-muted/20 p-3 md:order-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Sparkles className="size-4 shrink-0 text-primary" />
             <p className="text-sm font-medium">AI 할일 생성 모드</p>
           </div>
           <Button
             type="button"
             size="sm"
             variant={isAiMode ? "default" : "outline"}
-            onClick={() => setIsAiMode((prev) => !prev)}
+            className="shrink-0"
+            onClick={() => setAiMode(!isAiMode)}
           >
             {isAiMode ? "AI 모드 ON" : "AI 모드 OFF"}
           </Button>
@@ -378,7 +393,7 @@ export const TodoForm = ({
         ) : null}
       </div>
 
-      <div className="grid gap-2">
+      <div className="order-4 grid gap-2 md:order-4">
         <Label htmlFor="todo-due-date">마감일</Label>
         <div className="grid gap-2">
           <Input
@@ -485,7 +500,7 @@ export const TodoForm = ({
         </div>
       </div>
 
-      <div className="grid gap-2">
+      <div className="order-5 grid gap-2 md:order-5">
         <Label htmlFor="todo-priority">우선순위</Label>
         <select
           id="todo-priority"
@@ -499,7 +514,7 @@ export const TodoForm = ({
         </select>
       </div>
 
-      <div className="grid gap-2">
+      <div className="order-6 grid gap-2 md:order-6">
         <Label htmlFor="todo-category">카테고리(쉼표로 구분)</Label>
         <Input
           id="todo-category"
@@ -509,7 +524,7 @@ export const TodoForm = ({
         />
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="order-7 flex items-center gap-2 md:order-7">
         <Checkbox
           id="todo-completed"
           checked={completed}
@@ -519,13 +534,17 @@ export const TodoForm = ({
       </div>
 
       {errorText ? (
-        <p className="text-sm font-medium text-destructive">{errorText}</p>
+        <p className="order-8 text-sm font-medium text-destructive md:order-8">
+          {errorText}
+        </p>
       ) : null}
       {noticeText ? (
-        <p className="text-sm font-medium text-emerald-600">{noticeText}</p>
+        <p className="order-8 text-sm font-medium text-emerald-600 md:order-8">
+          {noticeText}
+        </p>
       ) : null}
 
-      <div className="flex justify-end gap-2">
+      <div className="order-9 flex justify-end gap-2 md:order-9">
         {onCancel ? (
           <Button type="button" variant="outline" onClick={onCancel}>
             취소

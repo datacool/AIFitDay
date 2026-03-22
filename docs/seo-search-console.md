@@ -7,9 +7,14 @@
 
 1. [Search Console](https://search.google.com/search-console) → **속성 추가** → **URL 접두어** 에 사이트 루트 URL 입력.
 2. **소유권 확인**
-   - **HTML 태그**: 제공된 `content` 값만 복사해 Vercel(등)에  
-     `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` 환경 변수로 넣고 재배포합니다.  
-     루트 레이아웃의 `metadata.verification.google` 에 반영됩니다.
+   - **HTML 태그**: Search Console이 보여 주는 태그에서 **`content="..."` 안의 문자열만** 복사합니다.  
+     (태그 전체를 넣지 마세요. 앞뒤에 `"` 를 추가하지 마세요.)
+   - Vercel → Project → **Settings → Environment Variables** 에  
+     `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` 이름으로 위 문자열만 저장합니다.
+   - **저장 후 반드시 재배포**(Redeploy)하세요. `NEXT_PUBLIC_*` 값은 **빌드 시점**에 HTML에 박히므로, 배포 없이 확인만 누르면 구글이 옛 HTML을 봅니다.
+   - 배포 후 브라우저에서 사이트 연 다음 **페이지 소스 보기**로  
+     `<meta name="google-site-verification" content="여기에_토큰" />` 가 `<head>` 에 있는지 확인합니다.
+   - 태그 전체를 실수로 넣었다면 `lib/verification-env.ts` 가 `content` 만 추출하도록 정규화하지만, 가능하면 **토큰만** 넣는 것이 가장 안전합니다.
    - 또는 **DNS TXT** / HTML 파일 방식을 사용해도 됩니다.
 3. **색인** → **Sitemaps** 에 다음을 제출합니다.  
    `{SITE_URL}/sitemap.xml`  

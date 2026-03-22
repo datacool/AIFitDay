@@ -99,15 +99,16 @@ export const MonthlyTodoCalendar = ({
         ) : null}
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="min-w-0 overflow-x-auto">
         <Calendar
           mode="single"
           selected={selectedDate}
           onSelect={(date) => date && onSelectDate(date)}
-          className="w-full rounded-xl border border-border/70 bg-background p-1 [--cell-size:--spacing(6)]"
+          className="w-full max-w-full min-w-0 rounded-xl border border-border/70 bg-background p-1 [--cell-size:2rem] sm:[--cell-size:2.25rem] md:[--cell-size:2.75rem]"
           classNames={{
+            root: "w-full max-w-full min-w-0",
             weekday:
-              "flex-1 rounded-(--cell-radius) text-[0.72rem] font-semibold text-muted-foreground select-none first:text-red-500 last:text-blue-500",
+              "flex-1 rounded-(--cell-radius) text-[0.62rem] font-semibold text-muted-foreground select-none first:text-red-500 last:text-blue-500 sm:text-[0.72rem]",
           }}
           modifiers={{
             highlighted: highlightedDates,
@@ -132,7 +133,7 @@ export const MonthlyTodoCalendar = ({
               return (
                 <CalendarDayButton
                   {...props}
-                  className="h-[58px] min-h-[58px] max-h-[58px] items-start justify-start overflow-hidden px-1.5 py-1.5 text-left"
+                  className="h-[52px] min-h-[52px] max-h-[52px] items-start justify-start overflow-hidden px-1 py-1 text-left sm:h-[58px] sm:min-h-[58px] sm:max-h-[58px] sm:px-1.5 sm:py-1.5"
                 >
                   <span className={cn("text-xs leading-none", dateColorClass)}>
                     {props.day.date.getDate()}
