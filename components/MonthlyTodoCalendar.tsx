@@ -104,11 +104,11 @@ export const MonthlyTodoCalendar = ({
           mode="single"
           selected={selectedDate}
           onSelect={(date) => date && onSelectDate(date)}
-          className="w-full max-w-full min-w-0 rounded-xl border border-border/70 bg-background p-1 [--cell-size:2rem] sm:[--cell-size:2.25rem] md:[--cell-size:2.75rem]"
+          className="w-full max-w-full min-w-0 overflow-hidden rounded-xl border border-border/70 bg-background p-0.5 [--cell-size:1.625rem] max-[380px]:[--cell-size:1.5rem] sm:[--cell-size:2.25rem] md:[--cell-size:2.75rem]"
           classNames={{
             root: "w-full max-w-full min-w-0",
             weekday:
-              "flex-1 rounded-(--cell-radius) text-[0.62rem] font-semibold text-muted-foreground select-none first:text-red-500 last:text-blue-500 sm:text-[0.72rem]",
+              "min-w-0 flex-1 rounded-(--cell-radius) text-[0.58rem] font-semibold text-muted-foreground select-none first:text-red-500 last:text-blue-500 sm:text-[0.72rem]",
           }}
           modifiers={{
             highlighted: highlightedDates,
